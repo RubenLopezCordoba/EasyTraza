@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - EasyTraza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/catalogo.css}">
+    <link rel="stylesheet" th:href="@{/buttons.css}">
+    </head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+    <aside class="sidebar" th:replace="~{fragments/sidebar :: sidebar('catalogo')}">
+    </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <h1 class="page-title" th:text="#{cataleg.titol}">Catálogo</h1>
+                <div class="header-actions">
+                    <div class="language-selector">
+                        <a href="?lang=es" th:classappend="${#locale.language == 'es' ? 'active' : ''}">ES</a>
+                        <span>|</span>
+                        <a href="?lang=ca" th:classappend="${#locale.language == 'ca' ? 'active' : ''}">CA</a>
+                    </div>
+                    <div class="user-profile" onclick="toggleUserMenu()">
+                        <div class="avatar" style="position:relative;"><span th:text="${session.usuario?.getIniciales()}">SA</span><img th:if="${session.usuario?.fotoUrl}" th:src="${session.usuario?.fotoUrl}" alt="Foto" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.remove()"></div>
+                        <div class="user-info-header">
+                            <span class="user-name" th:text="${session.usuario?.nombre}">Rafa Morante</span>
+                            <span class="user-role" th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Trabajador</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- User Dropdown Menu -->
+            <div id="userMenu" class="user-dropdown-menu" style="display: none;">
+                <div class="dropdown-header">
+                    <strong th:text="${session.usuario?.nombre}">Rafa Morante</strong>
+                    <small th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Trabajador</small>
+                </div>
+                <a href="/logout" class="dropdown-item logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </div>
+
+            <!-- Content -->
+            <div class="content-area">
+                <!-- Tabs -->
+                <div class="tabs-section">
+                    <button class="tab-btn" id="tab-tots" onclick="filtrarPorTipo('todos')">Tots</button>
+                    <button class="tab-btn" id="tab-INGREDIENTE" onclick="filtrarPorTipo('INGREDIENTE')">Materia Prima</button>
+                    <button class="tab-btn" id="tab-PRODUCTO" onclick="filtrarPorTipo('PRODUCTO')">Productes</button>
+                </div>
+
+                <!-- Actions Bar -->
+                <div class="actions-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput"  th:placeholder="#{cercar}" onkeyup="buscarItems()">
+                    </div>
+                    <button class="btn-primary" onclick="mostrarFormularioNuevo()">
+                        <i class="fas fa-plus"></i> <span th:text="#{cataleg.nou}">Nuevo Ítem</span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th th:text="#{cataleg.nom}">Nombre</th>
+                                <th th:text="#{cataleg.descripcio}">Descripción</th>
+                                <th th:text="#{cataleg.tipus}">Tipo</th>
+                                <th th:text="#{accions}">Acciones</th>
+                            </thead>
+                        <tbody id="tablaCatalogo">
+                            <td><td colspan="5" class="text-center" th:text="#{carregant}">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Catálogo -->
+    <div class="modal fade" id="catalogoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle" th:text="#{cataleg.nou}">Nuevo Ítem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="catalogoForm">
+                        <input type="hidden" id="itemId">
+                        <div class="form-group">
+                            <label th:text="#{cataleg.tipus}">Tipo *</label>
+                            <select class="form-control" id="tipo" required>
+                                <option value="" th:text="#{cercar}">Seleccionar...</option>
+                                <option value="INGREDIENTE" th:text="#{cataleg.ingredient}">Materia Prima</option>
+                                <option value="PRODUCTO" th:text="#{cataleg.producte}">Producto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label th:text="#{cataleg.nom}">Nombre *</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label th:text="#{cataleg.descripcio}">Descripción</label>
+                            <textarea class="form-control" id="descripcion" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{cancelar}">Cancelar</button>
+                    <button type="button" class="btn-primary" onclick="guardarItem()" th:text="#{guardar}">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
+                <small class="text-muted">Esta acción no se puede deshacer.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{cancelar}">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> <span th:text="#{eliminar}">Eliminar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Error -->
+<div class="modal fade" id="errorDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-circle"></i> Error</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="errorDeleteMsg"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Tancar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">var ES_TRABAJADOR = /*[[${session.usuario?.rol == 'TRABAJADOR'}]]*/ false;</script>
+    <script th:src="@{/catalogo.js}"></script>
+</body>
+</html>

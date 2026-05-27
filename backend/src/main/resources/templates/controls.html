@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controls - EasyTraza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/usuarios.css}">
+    <link rel="stylesheet" th:href="@{/clientes.css}">
+    <link rel="stylesheet" th:href="@{/controls.css}">
+    <link rel="stylesheet" th:href="@{/buttons.css}">
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar" th:replace="~{fragments/sidebar :: sidebar('controls')}">
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="page-title"><i class="fas fa-check-circle"></i> <span th:text="#{controls.titol}">Controls de pH de l'Aigua</span></h1>
+            <div class="header-actions">
+                <div class="language-selector">
+                    <a href="?lang=es" th:classappend="${#locale.language == 'es' ? 'active' : ''}">ES</a><span>|</span><a href="?lang=ca" th:classappend="${#locale.language == 'ca' ? 'active' : ''}">CA</a>
+                </div>
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="avatar" style="position:relative;"><span th:text="${session.usuario?.getIniciales()}">SA</span><img th:if="${session.usuario?.fotoUrl}" th:src="${session.usuario?.fotoUrl}" alt="Foto" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.remove()"></div>
+                    <div class="user-info-header">
+                        <span class="user-name" th:text="${session.usuario?.nombre}">Rafa Morante</span>
+                        <span class="user-role" th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Administrador</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="userMenu" class="user-dropdown-menu" style="display: none;">
+            <div class="dropdown-header">
+                <strong th:text="${session.usuario?.nombre}">Rafa Morante</strong>
+                <small th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Administrador</small>
+            </div>
+            <a href="/logout" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i> <span th:text="#{titol.sortir}">Tancar sessió</span></a>
+        </div>
+
+        <div class="content-area">
+            <div class="mb-3">
+                <button class="btn-primary" onclick="mostrarFormulariPh()"><i class="fas fa-plus"></i> <span th:text="#{controls.nou}">Nou Control</span></button>
+            </div>
+            <div class="card mb-4" id="phFormCard" style="display:none;">
+                <div class="card-header"><i class="fas fa-flask"></i> <span th:text="#{controls.titol}">Registrar pH de l'Aigua</span></div>
+                <div class="card-body">
+                    <form id="phForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="phValue" th:text="#{controls.ph}">pH *</label>
+                                <input type="number" id="phValue" class="form-control" step="0.01" min="0" max="14" placeholder="0.00 - 14.00" required>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label" for="phObservacions" th:text="#{controls.observacions}">Observacions</label>
+                                <input type="text" id="phObservacions" class="form-control" placeholder="Opcional">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="guardarPh()"><i class="fas fa-save"></i> <span th:text="#{guardar}">Guardar</span></button>
+                        <button type="button" class="btn-secondary" onclick="cancelarPh()" th:text="#{cancelar}">Cancel·lar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th th:text="#{controls.data}">Data</th>
+                            <th th:text="#{controls.ph}">pH</th>
+                            <th>Usuari</th>
+                            <th th:text="#{controls.observacions}">Observacions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="controlsBody">
+                        <tr><td colspan="4" class="text-center py-4" th:text="#{carregant}">Carregant...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="errorPopup" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-circle"></i> <span th:text="#{usuari.titol}">Error</span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="errorPopupMsg"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{titol.sortir}">Tancar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/controls.js}"></script>
+<script>
+function toggleUserMenu() {
+    const m = document.getElementById('userMenu');
+    if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

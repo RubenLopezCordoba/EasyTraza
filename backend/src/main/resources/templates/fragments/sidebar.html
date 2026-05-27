@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(activePage)">
+    <div class="logo">
+        <h2>EasyTraza</h2>
+        <span>Trazabilitat</span>
+    </div>
+    <nav class="nav-menu">
+        <a href="/dashboard" class="nav-item" th:classappend="${activePage == 'panel' ? 'active' : ''}" th:title="#{sidebar.panel}"><i class="fas fa-tachometer-alt"></i><span th:text="#{sidebar.panel}">Panel</span></a>
+        <a href="/clientes" class="nav-item" th:if="${session.usuario?.rol != 'TRABAJADOR'}" th:classappend="${activePage == 'clientes' ? 'active' : ''}" th:title="#{sidebar.clients}"><i class="fas fa-users"></i><span th:text="#{sidebar.clients}">Clients</span></a>
+        <a href="/proveedores" class="nav-item" th:if="${session.usuario?.rol != 'TRABAJADOR'}" th:classappend="${activePage == 'proveedores' ? 'active' : ''}" th:title="#{sidebar.proveidors}"><i class="fas fa-truck"></i><span th:text="#{sidebar.proveidors}">Proveïdors</span></a>
+        <a href="/catalogo" class="nav-item" th:if="${session.usuario?.rol != 'TRABAJADOR'}" th:classappend="${activePage == 'catalogo' ? 'active' : ''}" th:title="#{sidebar.cataleg}"><i class="fas fa-box"></i><span th:text="#{sidebar.cataleg}">Catàleg</span></a>
+        <a href="/lotes" class="nav-item" th:classappend="${activePage == 'lotes' ? 'active' : ''}" th:title="#{sidebar.lots}"><i class="fas fa-layer-group"></i><span th:text="#{sidebar.lots}">Lots</span></a>
+        <a href="/controls" class="nav-item" th:classappend="${activePage == 'controls' ? 'active' : ''}" th:title="#{sidebar.controls}"><i class="fas fa-check-circle"></i><span th:text="#{sidebar.controls}">Controls</span></a>
+        <a href="/albarans" class="nav-item" th:classappend="${activePage == 'albarans' ? 'active' : ''}" th:title="#{sidebar.albarans.proveidor}"><i class="fas fa-file-invoice"></i><span th:text="#{sidebar.albarans.proveidor}">Albarans Proveïdor</span></a>
+        <a href="/client-albarans" class="nav-item" th:classappend="${activePage == 'client-albarans' ? 'active' : ''}" th:title="#{sidebar.albarans.client}"><i class="fas fa-file-invoice"></i><span th:text="#{sidebar.albarans.client}">Albarans Client</span></a>
+        <a href="/usuarios" class="nav-item" th:classappend="${activePage == 'usuarios' ? 'active' : ''}" th:title="#{sidebar.usuaris}"><i class="fas fa-user-shield"></i><span th:text="#{sidebar.usuaris}">Usuaris</span></a>
+        <a href="/informes" class="nav-item" th:classappend="${activePage == 'informes' ? 'active' : ''}" th:title="#{sidebar.informes}"><i class="fas fa-chart-line"></i><span th:text="#{sidebar.informes}">Informes</span></a>
+    </nav>
+</aside>
+</body>
+</html>

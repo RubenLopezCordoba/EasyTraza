@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Albarans - EasyTraza</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/albarans.css}">
+    <link rel="stylesheet" th:href="@{/buttons.css}">
+    </head>
+    <body>
+        <div class="app-container">
+            <!-- Sidebar -->
+    <aside class="sidebar" th:replace="~{fragments/sidebar :: sidebar('albarans')}">
+    </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header class="top-header">
+                    <h1 class="page-title" th:text="#{albara.proveidor.titol}">Albaranes de Proveedor</h1>
+                    <div class="header-actions">
+                        <div class="language-selector">
+                            <a href="?lang=es" th:classappend="${#locale.language == 'es' ? 'active' : ''}">ES</a><span>|</span><a href="?lang=ca" th:classappend="${#locale.language == 'ca' ? 'active' : ''}">CA</a>
+                        </div>
+                        <div class="user-profile" onclick="toggleUserMenu()">
+                            <div class="avatar" style="position:relative;"><span th:text="${session.usuario?.getIniciales()}">SA</span><img th:if="${session.usuario?.fotoUrl}" th:src="${session.usuario?.fotoUrl}" alt="Foto" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.remove()"></div>
+                            <div class="user-info-header">
+                                <span class="user-name" th:text="${session.usuario?.nombre}">Super Admin</span>
+                                <span class="user-role" th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Administrador</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </header>
+
+                <div id="userMenu" class="user-dropdown-menu" style="display: none;">
+                    <div class="dropdown-header">
+                        <strong th:text="${session.usuario?.nombre}">Super Admin</strong>
+                        <small th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Administrador</small>
+                    </div>
+                    <a href="/logout" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i> <span th:text="#{titol.sortir}">Tancar sessió</span></a>
+                </div>
+
+                <div class="content-card">
+                    <div class="content-header">
+                        <div class="d-flex gap-2">
+                            <button class="btn-primary" onclick="mostrarFormulariNou()">
+                                <i class="fas fa-plus"></i> <span th:text="#{albara.proveidor.nou}">Nou Albarà</span>
+                            </button>
+                            <button class="btn-success" onclick="mostrarModalOCR()">
+                                <i class="fas fa-camera"></i> <span th:text="#{albara.proveidor.ocr}">OCR Albarà</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" th:placeholder="#{albara.proveidor.cercar}" onkeyup="buscarAlbarans()">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th th:text="#{albara.proveidor.numero}">Número</th>
+                                    <th onclick="toggleOrdreData()" style="cursor:pointer;user-select:none;"><span th:text="#{albara.proveidor.data}">Data</span> <i class="fas fa-sort-down" id="ordreDataIcon"></i></th>
+                                    <th th:text="#{albara.proveidor.proveidor}">Proveïdor</th>
+                                    <th th:text="#{albara.proveidor.operari}">Operari</th>
+                                    <th th:text="#{albara.proveidor.lots}">Lots</th>
+                                    <th th:text="#{accions}">Accions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAlbarans">
+                                <tr><td colspan="7" class="text-center" th:text="#{carregant}">Carregant...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Modal Visualitzar Albarà -->
+                    <div class="modal fade" id="modalVisualitzarAlbaran" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-info text-white">
+                                    <h5 class="modal-title"><i class="fas fa-eye"></i> <span th:text="#{albara.proveidor.detall}">Detall d'Albarà</span></h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6"><strong th:text="#{albara.proveidor.numero}">Número:</strong> <span id="detallNumAlbara">-</span></div>
+                                        <div class="col-md-6"><strong th:text="#{albara.proveidor.data}">Data:</strong> <span id="detallData">-</span></div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6"><strong th:text="#{albara.proveidor.proveidor}">Proveïdor:</strong><div id="detallProveedor">-</div></div>
+                                        <div class="col-md-6"><strong th:text="#{albara.proveidor.operari}">Operari:</strong><div id="detallUsuario">-</div></div>
+                                    </div>
+                                    <div class="mb-3"><strong th:text="#{albara.proveidor.observacions}">Observacions:</strong><br><p class="text-muted" id="detallObservacions">-</p></div>
+                                    <h6 th:text="#{albara.proveidor.lots}">Lots</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm">
+                                            <thead><tr><th th:text="#{lots.numero}">Número Lot</th><th th:text="#{lots.producte}">Producte</th><th th:text="#{lots.quantitat}">Quantitat</th><th th:text="#{albara.proveidor.caducitat}">Caducitat</th><th th:text="#{lots.estat}">Estat</th></tr></thead>
+                                            <tbody id="detallLots"><tr><td colspan="5" class="text-center" th:text="#{albara.proveidor.seleccionar.albara}">Selecciona un albarà per veure els lots</td></tr></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <span id="i18n-visualitzar" th:text="#{albara.proveidor.visualitzar}" style="display:none;">Visualitzar</span>
+
+        <!-- Modal Crear Albarà -->
+        <div class="modal fade" id="modalCrearAlbaran" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title"><i class="fas fa-plus"></i> <span th:text="#{albara.proveidor.nou}">Nou Albarà</span></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formCrearAlbaran">
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.numero}">Número d'Albarà *</label><input type="text" id="numAlbara" class="form-control" required></div>
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.proveidor}">Proveïdor *</label><select id="proveedorId" class="form-select" required><option value="" th:text="#{albara.proveidor.selecciona}">Selecciona...</option></select></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.operari}">Operari</label><select id="usuarioId" class="form-select" disabled><option value="" th:text="#{albara.proveidor.selecciona}">Selecciona...</option></select></div>
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.data.recepcio}">Data Recepció</label><input type="date" id="dataRecepcio" class="form-control"></div>
+                            </div>
+                            <div class="mb-3"><label class="form-label" th:text="#{albara.proveidor.observacions}">Observacions</label><textarea id="observacions" class="form-control" rows="2"></textarea></div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6><i class="fas fa-boxes"></i> <span th:text="#{albara.proveidor.lots}">Lots</span></h6>
+                                <button type="button" class="btn-outline" onclick="afegirLot()"><i class="fas fa-plus"></i> <span th:text="#{albara.proveidor.afegir.lot}">Afegir Lot</span></button>
+                            </div>
+                            <div class="row g-2 mb-2 text-center" style="font-size:0.8rem;color:#666;">
+                                <div class="col-md-2">Nº Lot</div>
+                                <div class="col-md-3">Matèria Primera</div>
+                                <div class="col-md-2">Quantitat</div>
+                                <div class="col-md-2">Unitat</div>
+                                <div class="col-md-2">Caducitat</div>
+                                <div class="col-md-1"></div>
+                            </div>
+                            <div id="lotsContainer" class="lots-container"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{cancelar}">Cancel·lar</button>
+                        <button type="button" class="btn-primary" onclick="guardarAlbaran()" th:text="#{albara.proveidor.guardar}">Guardar Albarà</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar Albarà -->
+        <div class="modal fade" id="modalEditarAlbaran" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title"><i class="fas fa-edit"></i> <span th:text="#{editar}">Editar Albarà</span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formEditarAlbaran">
+                            <input type="hidden" id="editId">
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.numero}">Número d'Albarà *</label><input type="text" id="editNumAlbara" class="form-control" required></div>
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.proveidor}">Proveïdor *</label><select id="editProveedorId" class="form-select" required><option value="" th:text="#{albara.proveidor.selecciona}">Selecciona...</option></select></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.operari}">Operari *</label><select id="editUsuarioId" class="form-select" disabled><option value="" th:text="#{albara.proveidor.selecciona}">Selecciona...</option></select></div>
+                                <div class="col-md-6 mb-3"><label class="form-label" th:text="#{albara.proveidor.data.recepcio}">Data Recepció</label><input type="date" id="editDataRecepcio" class="form-control"></div>
+                            </div>
+                            <div class="mb-3"><label class="form-label" th:text="#{albara.proveidor.observacions}">Observacions</label><textarea id="editObservacions" class="form-control" rows="2"></textarea></div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6><i class="fas fa-boxes"></i> <span th:text="#{albara.proveidor.lots}">Lots</span></h6>
+                                <button type="button" class="btn-outline" onclick="afegirLotEditar()"><i class="fas fa-plus"></i> <span th:text="#{albara.proveidor.afegir.lot}">Afegir Lot</span></button>
+                            </div>
+                            <div class="row g-2 mb-2 text-center" style="font-size:0.8rem;color:#666;">
+                                <div class="col-md-2">Nº Lot</div>
+                                <div class="col-md-3">Matèria Primera</div>
+                                <div class="col-md-2">Quantitat</div>
+                                <div class="col-md-2">Unitat</div>
+                                <div class="col-md-2">Caducitat</div>
+                                <div class="col-md-1"></div>
+                            </div>
+                            <div id="editLotsContainer" class="lots-container"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{cancelar}">Cancel·lar</button>
+                        <button type="button" class="btn-warning" onclick="actualizarAlbaran()" th:text="#{guardar}">Actualitzar Albarà</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal OCR -->
+        <div class="modal fade" id="modalOCR" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title"><i class="fas fa-camera"></i> <span th:text="#{albara.proveidor.ocritol}">Escanejar Albarà (OCR)</span></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ocrPaso1">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #6c757d;"></i>
+                                <p class="mt-2" th:text="#{albara.proveidor.seleccionar.imagen}">Selecciona una imatge de l'albarà</p>
+                                <input type="file" id="ocrImagen" accept="image/*" class="form-control mb-3" onchange="previsualizarOCR()">
+                                <img id="ocrPreview" style="max-width: 300px; max-height: 300px; display: none; margin: 10px auto;" />
+                                <button class="btn-success" id="btnAnalizar" onclick="analizarOCR()" disabled><i class="fas fa-search"></i> <span th:text="#{albara.proveidor.analitzar}">Analitzar</span></button>
+                                <div id="ocrLoading" style="display: none; margin-top: 15px;"><div class="spinner-border text-success"></div><p class="mt-2" th:text="#{albara.proveidor.processant}">Processant imatge amb IA...</p></div>
+                            </div>
+                        </div>
+                        <div id="ocrPaso2" style="display: none;">
+                            <h5 th:text="#{albara.proveidor.revisar.dades}">Revisa les dades detectades</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6"><label class="form-label" th:text="#{albara.proveidor.numero}">Nº Albarà</label><input type="text" id="ocrNumAlbara" class="form-control"></div>
+                                <div class="col-md-6"><label class="form-label" th:text="#{albara.proveidor.data}">Data</label><input type="date" id="ocrFecha" class="form-control"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6"><label class="form-label" th:text="#{albara.proveidor.proveidor}">Proveïdor</label><input type="text" id="ocrProveedorNombre" class="form-control"></div>
+                                <div class="col-md-6"><label class="form-label">CIF</label><input type="text" id="ocrProveedorCif" class="form-control"></div>
+                            </div>
+                            <hr><h6 th:text="#{albara.proveidor.lots.detectats}">Lots detectats</h6>
+                            <div id="ocrLotsContainer"></div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn-secondary" onclick="resetOCR()"><i class="fas fa-arrow-left"></i> <span th:text="#{albara.proveidor.tornar}">Tornar</span></button>
+                                <button class="btn-success" onclick="confirmarOCR()"><i class="fas fa-check"></i> <span th:text="#{albara.proveidor.confirmar.guardar}">Confirmar i Guardar</span></button>
+                            </div>
+                            <div id="ocrGuardando" style="display: none; margin-top: 15px;"><div class="spinner-border text-success"></div><p class="mt-2" th:text="#{albara.proveidor.guardant}">Guardant albarà...</p></div>
+                        </div>
+                        <div id="ocrPaso3" style="display: none;">
+                            <div class="text-center">
+                                <i class="fas fa-check-circle" style="font-size: 64px; color: #28a745;"></i>
+                                <h4 class="mt-3" th:text="#{albara.proveidor.guardat}">Albarà guardat correctament!</h4>
+                                <button class="btn-primary mt-3" onclick="cerrarModalOCR()"><i class="fas fa-check"></i> <span th:text="#{albara.proveidor.acceptar}">Acceptar</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmació -->
+        <div id="confirmDeleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; justify-content: center; align-items: center;">
+            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                <div style="margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 16px;"></i>
+                    <h3>Confirmar eliminació</h3>
+                    <p>Estàs segur que vols eliminar aquest albarà?</p>
+                    <p style="color: #ef4444; font-size: 12px; margin-top: 8px;">Aquesta acció no es pot desfer.</p>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button onclick="tancarConfirmModal()" style="padding: 10px 20px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer;" th:text="#{cancelar}">Cancel·lar</button>
+                    <button onclick="confirmarEliminar()" style="padding: 10px 20px; border: none; border-radius: 6px; background: #dc3545; color: white; cursor: pointer;" th:text="#{eliminar}">Eliminar</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script th:src="@{/albarans.js}"></script>
+    </body>
+</html>

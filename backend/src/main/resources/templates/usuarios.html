@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - EasyTraza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/usuarios.css}">
+    <link rel="stylesheet" th:href="@{/buttons.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+    <aside class="sidebar" th:replace="~{fragments/sidebar :: sidebar('usuarios')}">
+    </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <h1 class="page-title" th:text="#{usuari.titol}">Usuarios</h1>
+                <div class="header-actions">
+                    <div class="language-selector">
+                        <a href="?lang=es" th:classappend="${#locale.language == 'es' ? 'active' : ''}">ES</a>
+                        <span>|</span>
+                        <a href="?lang=ca" th:classappend="${#locale.language == 'ca' ? 'active' : ''}">CA</a>
+                    </div>
+                    <div class="user-profile" onclick="toggleUserMenu()">
+                        <div class="avatar" style="position:relative;"><span th:text="${session.usuario?.getIniciales()}">SA</span><img th:if="${session.usuario?.fotoUrl}" th:src="${session.usuario?.fotoUrl}" alt="Foto" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.remove()"></div>
+                        <div class="user-info-header">
+                            <span class="user-name" th:text="${usuarioActual?.nombre}">Super Admin</span>
+                            <span class="user-role" th:text="${usuarioActual?.rol == 'ADMIN' ? 'Administrador' : usuarioActual?.rol == 'TRABAJADOR' ? 'Trabajador' : usuarioActual?.rol == 'SUPER_ADMIN' ? 'Super Admin' : usuarioActual?.rol}">Administrador</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- User Dropdown Menu -->
+            <div id="userMenu" class="user-dropdown-menu" style="display: none;">
+                <div class="dropdown-header">
+                    <strong th:text="${usuarioActual?.nombre}">Super Admin</strong>
+                    <small th:text="${usuarioActual?.rol == 'ADMIN' ? 'Administrador' : usuarioActual?.rol == 'TRABAJADOR' ? 'Trabajador' : usuarioActual?.rol == 'SUPER_ADMIN' ? 'Super Admin' : usuarioActual?.rol}">Administrador</small>
+                </div>
+                <a href="/logout" class="dropdown-item logout">
+                    <i class="fas fa-sign-out-alt"></i> <span th:text="#{titol.sortir}">Cerrar sesión</span>
+                </a>
+            </div>
+
+            <!-- Content -->
+            <div class="content-card">
+                <div class="content-header">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filtrarPorRol('todos')"><span th:text="#{usuari.tots}">Todos</span></button>
+                        <button class="filter-tab" onclick="filtrarPorRol('ADMIN')"><span th:text="#{usuari.administradors}">Administradores</span></button>
+                        <button class="filter-tab" onclick="filtrarPorRol('TRABAJADOR')"><span th:text="#{usuari.treballadors}">Trabajadores</span></button>
+                    </div>
+                <button class="btn-primary" onclick="mostrarFormularioNuevo()">
+                    <i class="fas fa-plus"></i> <span th:text="#{usuari.nou}">Nuevo Usuario</span>
+                </button>
+                </div>
+
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput"  th:placeholder="#{cercar}" onkeyup="buscarUsuarios()">
+                </div>
+
+                <div class="table-container">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th th:text="#{usuari.nif}">NIF</th>
+                                <th th:text="#{usuari.nom}">Nombre</th>
+                                <th th:text="#{usuari.email}">Email</th>
+                                <th th:text="#{usuari.telefon}">Teléfono</th>
+                                <th th:text="#{usuari.rol}">Rol</th>
+                                <th th:text="#{usuari.estat}">Estado</th>
+                                <th th:text="#{accions}">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaUsuarios">
+                            <tr><td colspan="8" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Usuario -->
+    <div class="modal fade" id="usuarioModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle" th:text="#{usuari.nou}">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" th:aria-label="#{tancar}"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="usuarioForm">
+                        <input type="hidden" id="usuarioId">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nif" class="form-label">NIF *</label>
+                            <input type="text" class="form-control" id="nif" placeholder="12345678Z" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label" id="passwordLabel">Contraseña *</label>
+                            <input type="password" class="form-control" id="password">
+                            <small class="text-muted" id="passwordHelp">Mínimo 4 caracteres</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono">
+                        </div>
+                        <div class="mb-3" id="fotoSection" style="display:none;">
+                            <label class="form-label">Foto de perfil</label>
+                            <div style="display:flex;align-items:center;gap:15px;">
+                                <div id="fotoPreview" style="width:60px;height:60px;border-radius:50%;background:#667eea;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2rem;overflow:hidden;flex-shrink:0;">
+                                    <span id="fotoPreviewText">+</span>
+                                </div>
+                                <div style="flex:1;">
+                                    <input type="file" id="fotoInput" accept="image/*" class="form-control" style="font-size:0.85rem;">
+                                    <small class="text-muted">Formatos: JPG, PNG, GIF</small>
+                                </div>
+                                <button type="button" class="btn-primary" onclick="subirFoto()" style="white-space:nowrap;padding:8px 16px;font-size:0.85rem;">
+                                    <i class="fas fa-upload"></i> Subir
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rol" class="form-label">Rol *</label>
+                            <select class="form-select" id="rol" required>
+                                <option value="" th:text="#{albara.proveidor.selecciona}">Seleccionar...</option>
+                                <option value="SUPER_ADMIN" th:text="#{usuari.super.admin}">Super Admin</option>
+                                <option value="ADMIN" th:text="#{usuari.admin}">Administrador</option>
+                                <option value="TRABAJADOR" th:text="#{usuari.treballador}">Trabajador</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal" th:text="#{cancelar}">Cancelar</button>
+                    <button type="button" class="btn-primary" onclick="guardarUsuario()" th:text="#{guardar}">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación Personalizado -->
+    <div id="confirmDeleteModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-modal-header">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 16px;"></i>
+                <h3 th:text="#{eliminar}">Confirmar eliminación</h3>
+                <p th:text="#{usuari.confirmar.eliminar}">¿Estás seguro de que quieres eliminar este usuario?</p>
+                <p style="color: #ef4444; font-size: 12px; margin-top: 8px;" th:text="#{usuari.no.desfer}">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="confirm-modal-footer">
+                <button class="btn-secondary" onclick="tancarConfirmModal()" th:text="#{cancelar}">Cancelar</button>
+                <button class="btn-danger" onclick="confirmarEliminar()" th:text="#{eliminar}">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/usuarios.js}"></script>
+</body>
+</html>

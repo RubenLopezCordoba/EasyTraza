@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>EasyTraza - Verificar Código</title>
+        <link rel="stylesheet" href="/login.css">
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <img src="/img/logo.png" alt="EasyTraza" class="logo">
+                    <h1>EasyTraza</h1>
+                    <p>Trazabilidad</p>
+                </div>
+
+                <div class="login-body">
+                    <div style="text-align:right;margin-bottom:10px;">
+                        <a href="?lang=es" style="color:#A0522D;text-decoration:none;font-weight:bold;padding:4px 8px;">ES</a>
+                        <span style="color:#ccc;">|</span>
+                        <a href="?lang=ca" style="color:#A0522D;text-decoration:none;font-weight:bold;padding:4px 8px;">CA</a>
+                    </div>
+                    <h2 th:text="#{login.verificar}">Verificar Código</h2>
+                    <p style="text-align:center;color:#6c757d;font-size:14px;margin-bottom:20px;">
+                        Introduce el código de 6 dígitos enviado a <strong th:text="${email}"></strong>
+                    </p>
+
+                    <div th:if="${error}" style="background:#fff8f8;color:#dc3545;padding:12px;border-radius:10px;margin-bottom:20px;font-size:14px;text-align:center;border-left:3px solid #dc3545;" th:text="${error}">
+                    </div>
+
+                    <form th:action="@{/verify-code}" method="post" style="margin-top:10px;">
+                        <input type="hidden" name="email" th:value="${email}">
+
+                        <div class="form-group" style="margin-bottom:20px;">
+                            <label for="code" style="display:block;font-size:14px;font-weight:500;color:#333;margin-bottom:8px;">Código de verificación</label>
+                            <input type="text" id="code" name="code" placeholder="000000" required maxlength="6" minlength="6" inputmode="numeric" pattern="[0-9]{6}" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:24px;outline:none;box-sizing:border-box;text-align:center;letter-spacing:8px;font-family:monospace;">
+                        </div>
+
+                        <div class="password-modal-footer" style="justify-content:center;padding:0;">
+                            <button type="submit" class="btn-confirm" style="width:100%;padding:12px 20px;">Verificar Código</button>
+                        </div>
+                    </form>
+
+                    <div style="text-align:center;margin-top:25px;">
+                        <a href="/forgot-password" style="color:#667eea;font-size:14px;text-decoration:none;">Solicitar nuevo código</a>
+                    </div>
+
+                    <div style="text-align:center;margin-top:12px;">
+                        <a href="/login" style="color:#6c757d;font-size:13px;text-decoration:none;">Volver al inicio de sesión</a>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <p>EasyTraza - Sistema de Trazabilidad</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes - EasyTraza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" th:href="@{/albarans.css}">
+    <link rel="stylesheet" th:href="@{/buttons.css}">
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar" th:replace="~{fragments/sidebar :: sidebar('informes')}">
+    </aside>
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="page-title" th:text="#{sidebar.informes}">Informe Mensual de Vendes</h1>
+            <div class="header-actions">
+                <div class="language-selector">
+                    <a href="?lang=es" th:classappend="${#locale.language == 'es' ? 'active' : ''}">ES</a>
+                    <span>|</span>
+                    <a href="?lang=ca" th:classappend="${#locale.language == 'ca' ? 'active' : ''}">CA</a>
+                </div>
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="avatar" style="position:relative;"><span th:text="${session.usuario?.getIniciales()}">SA</span><img th:if="${session.usuario?.fotoUrl}" th:src="${session.usuario?.fotoUrl}" alt="Foto" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.remove()"></div>
+                    <div class="user-info-header">
+                        <span class="user-name" th:text="${session.usuario?.nombre}">Usuari</span>
+                        <span class="user-role" th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Rol</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+        <div id="userMenu" class="user-dropdown-menu" style="display:none;">
+            <div class="dropdown-header">
+                <strong th:text="${session.usuario?.nombre}">Usuari</strong>
+                <small th:text="${session.usuario?.rol == 'ADMIN' ? 'Administrador' : session.usuario?.rol == 'TRABAJADOR' ? 'Trabajador' : session.usuario?.rol == 'SUPER_ADMIN' ? 'Super Admin' : session.usuario?.rol}">Rol</small>
+            </div>
+            <a href="/logout" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i> <span th:text="#{titol.sortir}">Tancar sessió</span></a>
+        </div>
+        <div class="content-card">
+            <div class="filters-advanced" style="display:flex;flex-wrap:wrap;gap:16px;padding:16px;align-items:flex-end;">
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> <span th:text="#{informes.mes}">Mes</span></label>
+                    <select id="selMes" class="form-select" onchange="carregarGrafic()"></select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-box"></i> <span th:text="#{lots.producte}">Producte</span></label>
+                    <select id="selProducte" class="form-select" onchange="carregarGrafic()">
+                        <option value="" th:text="#{informes.tots}">Tots els productes</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button class="btn-primary" onclick="carregarGrafic()"><i class="fas fa-sync"></i> <span th:text="#{informes.actualitzar}">Actualitzar</span></button>
+                </div>
+            </div>
+            <div class="p-3">
+                <div id="totalResum" class="mb-3" style="font-size:1.2rem;font-weight:bold;"></div>
+                <div style="position:relative;height:400px;">
+                    <canvas id="graficVendes"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/informes.js}"></script>
+</body>
+</html>

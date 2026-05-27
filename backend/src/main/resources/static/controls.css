@@ -1,0 +1,72 @@
+.card {
+    background: white;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    background: #f8f9fa;
+    padding: 16px 24px;
+    font-weight: 600;
+    color: #2d3436;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+#weeklyPrompt, #weeklyComplete {
+    border-radius: 12px;
+    padding: 20px 24px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.alert-success {
+    background: #d1e7dd;
+    border: 1px solid #28a745;
+    color: #0f5132;
+}
+
+.btn-secondary {
+    background: #e9ecef;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+    color: #495057;
+    cursor: pointer;
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #495057;
+    margin-bottom: 6px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #A0522D, #CD853F);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108,92,231,0.3);
+}

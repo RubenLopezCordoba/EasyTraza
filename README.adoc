@@ -1,0 +1,61 @@
+= EasyTraza
+:toc:
+:toclevels: 3
+
+Video de demostracio: https://youtu.be/f-y3T8wcNow[]
+
+== Descripcio
+
+EasyTraza es un sistema de traçabilitat per a la industria alimentaria,
+centrat en una panaderia, que permet gestionar lots de produccio, albarans
+de proveidor i client, controls de qualitat i informes de vendes.
+El projecte compta amb una versio web (Spring Boot + Thymeleaf) i una
+aplicacio mobil Android (Kotlin + Jetpack Compose).
+
+== Funcionalitats principals
+
+* Gestio de lots de produccio (iniciar, finalitzar, filtrar per estat, materia primera i data)
+* CRUD d'albarans de proveidor amb lots i materies primeres
+* Escaneig OCR d'albarans amb intel·ligencia artificial (Tesseract + Groq AI)
+* CRUD d'albarans de client amb traçabilitat de lots
+* CRUD de productes, clients, proveidors i usuaris
+* Controls de pH diaris amb alertes setmanals
+* Informes mensuals de vendes amb grafic
+* Autenticacio web (usuari + contrasenya) i mobile (seleccio d'usuari)
+* Perfil d'usuari amb foto i recuperacio de contrasenya
+* Internacionalitzacio en catala i castella
+
+== Tecnologies utilitzades
+
+*Backend:*:
+* Java 21 amb Spring Boot 4.0.5
+* JPA/Hibernate amb MySQL
+* REST API
+* Thymeleaf per al frontend web
+* OCR amb Tesseract i Groq AI
+
+*Mobile:*:
+* Kotlin amb Jetpack Compose
+* Clean Architecture (UI - Domain - Data)
+* MVVM amb StateFlow
+* Retrofit per a comunicacio REST
+
+*Altres:*:
+* Git amb GitFlow (main, develop, feature branches)
+* HTTPS amb certificat TLS autosignat
+* Internacionalitzacio (catala / castella)
+
+== Estructura del repositori
+
+backend/:: Projecte del servidor (Spring Boot) estructurat en 3 capes: controladors, serveis i repositoris.
+mobile/:: Client Android amb Kotlin i Jetpack Compose, seguint Clean Architecture.
+documentacio/:: Documentacio del projecte en format AsciiDoc.
+
+== Requisits per executar
+
+[cols="2,3", options="header"]
+|===
+| Component | Requisit
+| Backend | Java 21+, MySQL, Maven
+| Mobile | Android Studio, SDK 26+, Kotlin 2.0+
+|===
